@@ -37,6 +37,11 @@ class ERMIEvaluate:
 
         self.mwe = load_pickle(self.mwe_train_path)
         
+        self.mwe_identifier = MWEIdentifier(self.lang, self.embedding_type, self.mwe, self.logger, self.mwe_write_path)
+        self.mwe_identifier.set_params(self.params[self.lang])
+        self.mwe_identifier.set_train()
+        self.mwe_identifier.build_model()
+        
     def evaluate(self, sentence):
         
         nlp = spacy_udpipe.load_from_path(lang="tr",
@@ -55,12 +60,10 @@ class ERMIEvaluate:
         space_row = {'ID':'space', 'FORM':'space', "LEMMA":'space', "UPOS":'space', "XPOS":'space', "FEATS":'space', "HEAD":'space', "DEPREL":'space', "DEPS":'space', "MISC":'space', "PARSEME:MWE":'space', "BIO":'space'}
         test_corpus = new_corpus.append(space_row, ignore_index=True)
         self.mwe._test_corpus = test_corpus
-        
-        mwe_identifier = MWEIdentifier(self.lang, self.embedding_type, self.mwe, self.logger, self.mwe_write_path)
-        mwe_identifier.set_params(self.params[self.lang])
-        mwe_identifier.set_test()
-        mwe_identifier.build_model()
+                
+        self.mwe_identifier.mwe = self.mwe
+        self.mwe_identifier.set_test()
         reload_path = os.path.join(self.root_path, 'TR_model', 'teacher-weights-last.hdf5')
-        lines = mwe_identifier.predict_test_custom_model(reload_path)
+        lines = self.mwe_identifier.predict_test_custom_model(reload_path)
         
         return lines
