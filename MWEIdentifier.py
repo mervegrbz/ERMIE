@@ -41,31 +41,37 @@ class MWEIdentifier:
             head = "<UNK>"
         return head
 
-    def set_test(self):
+    def set_train(self):
         self.X_tr_pos = [[self.mwe.pos2idx[w[3]] for w in s] for s in self.mwe.train_sentences]
         self.X_tr_pos = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_tr_pos, padding="post", value=0)
-        self.X_te_pos = [[self.mwe.pos2idx[w[3]] for w in s] for s in self.mwe.test_sentences]
-        self.X_te_pos = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_pos, padding="post", value=0)
 
         self.X_tr_deprel = [[self.mwe.deprel2idx[w[7]] for w in s] for s in self.mwe.train_sentences]
         self.X_tr_deprel = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_tr_deprel, padding="post", value=0)
-        self.X_te_deprel = [[self.mwe.deprel2idx[w[7]] for w in s] for s in self.mwe.test_sentences]
-        self.X_te_deprel = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_deprel, padding="post", value=0)
 
         self.X_tr_word = [[self.mwe.word2idx[w[1]] for w in s] for s in self.mwe.train_sentences]
         self.X_tr_word = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_tr_word, padding="post", value=0)
-        self.X_te_word = [[self.mwe.word2idx[w[1]] if w[1] in self.mwe.word2idx else self.mwe.word2idx['<UNK>'] for w in s] for s in self.mwe.test_sentences]
-        self.X_te_word = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_word, padding="post", value=0)
 
         if self.embed in ('head', 'headend'):
             self.X_tr_head = [[self.mwe.word2idx[self.head_word(w[1], w[6], s)] for w in s] for s in self.mwe.train_sentences]  # head = 6
             self.X_tr_head = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_tr_head, padding="post", value=0)
-            self.X_te_head = [[self.mwe.word2idx[w[6]] if w[6] in self.mwe.word2idx else self.mwe.word2idx['<UNK>'] for w in s] for s in self.mwe.test_sentences]
-            self.X_te_head = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_head, padding="post", value=0)
 
         self.y = [[self.mwe.tag2idx[w[-1]] for w in s] for s in self.mwe.train_sentences]
         self.y = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.y, padding="post", value=self.mwe.tag2idx["O"])
         self.y = [to_categorical(i, num_classes=self.mwe.n_tags) for i in self.y]
+
+    def set_test(self):
+        self.X_te_pos = [[self.mwe.pos2idx[w[3]] for w in s] for s in self.mwe.test_sentences]
+        self.X_te_pos = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_pos, padding="post", value=0)
+
+        self.X_te_deprel = [[self.mwe.deprel2idx[w[7]] for w in s] for s in self.mwe.test_sentences]
+        self.X_te_deprel = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_deprel, padding="post", value=0)
+
+        self.X_te_word = [[self.mwe.word2idx[w[1]] if w[1] in self.mwe.word2idx else self.mwe.word2idx['<UNK>'] for w in s] for s in self.mwe.test_sentences]
+        self.X_te_word = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_word, padding="post", value=0)
+
+        if self.embed in ('head', 'headend'):
+            self.X_te_head = [[self.mwe.word2idx[w[6]] if w[6] in self.mwe.word2idx else self.mwe.word2idx['<UNK>'] for w in s] for s in self.mwe.test_sentences]
+            self.X_te_head = pad_sequences(maxlen=self.mwe.max_sent, sequences=self.X_te_head, padding="post", value=0)
 
     def get_raw_set(self, raw_sentences):
         X_raw_pos = [[self.mwe.pos2idx[w[3]] for w in s] for s in raw_sentences]
